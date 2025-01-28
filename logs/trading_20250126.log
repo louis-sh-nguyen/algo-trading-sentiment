@@ -1,0 +1,7 @@
+2025-01-26 21:54:21,254 - ERROR - Error fetching data for AAPL: 'AAPL'
+2025-01-26 22:07:54,804 - ERROR - Error analyzing AAPL: 'RSI'
+2025-01-26 22:07:54,895 - ERROR - Error analyzing MSFT: 'RSI'
+2025-01-26 22:07:54,989 - ERROR - Error analyzing GOOGL: 'RSI'
+2025-01-26 22:08:22,809 - ERROR - Error analyzing AAPL: 'RSI'
+2025-01-26 22:08:22,874 - ERROR - Error analyzing MSFT: 'RSI'
+2025-01-26 22:08:22,918 - ERROR - Error analyzing GOOGL: 'RSI'
