@@ -13,26 +13,24 @@ class Strategy:
             data = fetch_data(symbol)
             
             tech = TechnicalAnalyser(data)
-            tech.calculate_indicators()
-            tech_signals = tech.get_signals()
+            tech_score = tech.analyse()
             
             fund = FundamentalAnalyser(symbol)
             fund_score = fund.analyse()
             
-            # sent = SentimentAnalyser(symbol)
-            # sent_score = sent.analyse()
-            sent_score = 50  # Placeholder
+            sent = SentimentAnalyser(symbol)
+            sent_score = sent.analyse()
             
             total_score = (
-                sum(tech_signals.values()) * 25 +
-                fund_score * 0.4 +
-                sent_score * 0.2
+                tech_score * 0.4 +          # Technical weight
+                fund_score * 0.4 +          # Fundamental weight
+                sent_score * 0.2            # Sentiment weight
             )
             
             return {
                 'symbol': symbol,
                 'score': total_score,
-                'technical': tech_signals,
+                'technical': tech_score,
                 'fundamental': fund_score,
                 'sentiment': sent_score
             }
@@ -45,6 +43,11 @@ if __name__ == '__main__':
     strategy = Strategy(['AAPL', 'MSFT', 'GOOGL'])
     for symbol in strategy.symbols:
         result = strategy.analyse_stock(symbol)
-        print(f'Analysis for {symbol}: {result}')
+        print(f'Score for {symbol}: \
+                \n\tTechnical: {result['technical']}\
+                \n\tFundamental: {result['fundamental']}\
+                \n\tSentiment: {result['sentiment']}\
+                \n\tTotal: {result['score']}')
+        
         # if result:
         #     logging.info(f"Analysis for {symbol}: {result}")
