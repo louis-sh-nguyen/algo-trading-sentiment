@@ -28,7 +28,7 @@ class Strategy:
         self.stock_data.clear()
         self.fetch_all_data()
     
-    def analyze_all_stocks(self):
+    def analyse_all_stocks(self):
         """Run analysis for all symbols once"""
         if not self.stock_data:
             self.fetch_all_data()
@@ -70,13 +70,13 @@ class Strategy:
         """Get analysis results for a symbol"""
         if not self.analysis_results or \
            (datetime.now() - self.last_update) > timedelta(hours=24):
-            self.analyze_all_stocks()
+            self.analyse_all_stocks()
         return self.analysis_results.get(symbol)
     
     def select_top_stocks(self, score_type: str = 'total', n: int = 5) -> List[dict]:
         """Select top N stocks based on specified score type"""
         if not self.analysis_results:
-            self.analyze_all_stocks()
+            self.analyse_all_stocks()
         
         valid_results = [r for r in self.analysis_results.values() if r]
         
