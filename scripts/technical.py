@@ -10,7 +10,11 @@ class TechnicalAnalyser:
             'RSI_Overbought': -25,    # Strong sell signal
             'MACD_Crossover': 15,     # Trend confirmation
             'Above_SMA20': 10,        # Short-term trend
-            'Price_Above_SMA50': 15   # Medium-term trend
+            'Price_Above_SMA50': 15,  # Medium-term trend
+            'BB_Upper_Break': -20,    # Overbought signal
+            'BB_Lower_Break': 20,     # Oversold signal
+            'Stoch_Oversold': 15,     # Additional oversold signal
+            'Stoch_Overbought': -15   # Additional overbought signal
         }
     
     def calculate_indicators(self) -> pd.DataFrame:
@@ -23,14 +27,24 @@ class TechnicalAnalyser:
     
     def get_signals(self) -> dict:
         """Generate technical signals"""
-        data_with_indicators = self.calculate_indicators()
+        self.calculate_indicators()
         latest_data = self.data.iloc[-1]
+        # Add Bollinger Bands
+        upper, middle, lower = talib.BBANDS(self.data['Close'])
+        
+        # Add Stochastic Oscillator
+        slowk, slowd = talib.STOCH(self.data['High'], self.data['Low'], self.data['Close'])
+        
         return {
             'RSI_Oversold': latest_data['RSI'] < 30,
             'RSI_Overbought': latest_data['RSI'] > 70,
             'MACD_Crossover': self.data['MACD'].iloc[-1] > self.data['MACD_Signal'].iloc[-1],
             'Above_SMA20': latest_data['Close'] > latest_data['SMA_20'],
-            'Price_Above_SMA50': latest_data['Close'] > latest_data['SMA_50']
+            'Price_Above_SMA50': latest_data['Close'] > latest_data['SMA_50'],
+            'BB_Upper_Break': latest_data['Close'] > upper.iloc[-1],
+            'BB_Lower_Break': latest_data['Close'] < lower.iloc[-1],
+            'Stoch_Oversold': slowk.iloc[-1] < 20,
+            'Stoch_Overbought': slowk.iloc[-1] > 80
         }
 
     def analyse(self) -> float:
