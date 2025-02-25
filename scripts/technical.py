@@ -6,15 +6,15 @@ class TechnicalAnalyser:
     def __init__(self, data: pd.DataFrame):
         self.data = data
         self.signal_weights = {
-            'RSI_Oversold': 25,       # Strong buy signal
-            'RSI_Overbought': -25,    # Strong sell signal
-            'MACD_Crossover': 15,     # Trend confirmation
-            'Above_SMA20': 10,        # Short-term trend
-            'Price_Above_SMA50': 15,  # Medium-term trend
-            'BB_Upper_Break': -20,    # Overbought signal
-            'BB_Lower_Break': 20,     # Oversold signal
-            'Stoch_Oversold': 15,     # Additional oversold signal
-            'Stoch_Overbought': -15   # Additional overbought signal
+            'RSI_Oversold': 35,       # Strong oversold signal
+            'RSI_Overbought': -10,    # Weak overbought signal
+            'MACD_Crossover': 5,       # Slight trend confirmation
+            'Above_SMA20': 0,          # Neutral trend signal
+            'Price_Above_SMA50': 0,    # Neutral trend signal
+            'BB_Upper_Break': -15,     # Weak overbought signal
+            'BB_Lower_Break': 25,      # Oversold signal
+            'Stoch_Oversold': 30,      # Strong oversold signal
+            'Stoch_Overbought': -10     # Weak overbought signal
         }
     
     def calculate_indicators(self) -> pd.DataFrame:
@@ -59,8 +59,15 @@ class TechnicalAnalyser:
                 if is_active and signal in self.signal_weights
             )
             
+            # Scale by volatility (example: using ATR)
+            atr = talib.ATR(self.data['High'], self.data['Low'], self.data['Close']).iloc[-1]
+            volatility_factor = min(1, atr / self.data['Close'].iloc[-1])  # Normalize
+            
+            # Apply non-linear scaling
+            scaled_score = score * (1 + volatility_factor)
+            
             # Normalize to 0-100 range
-            normalized_score = 50 + score
+            normalized_score = 50 + scaled_score
             return max(0, min(100, normalized_score))
             
         except Exception as e:

@@ -106,15 +106,16 @@ if __name__ == '__main__':
     setup_logging()
     
     # Test strategy
-    symbols = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META']
+    # symbols = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META']
     
-    # symbols = [
-    #     'AAPL',  'MSFT',  'GOOGL', 'AMZN',  'META',  'NVDA', 'TSLA',
-    #     'INTC',  'AMD',   'CRM',   'ADBE',  'ORCL',  'CSCO', 'IBM',
-    #     'QCOM',  'TXN',   'AVGO',  'ARM',   'PYPL',  'MU',   'UBER',
-    #     'ASML', 'SHOP',  'NOW',   'SNOW',  'PLTR',  'NET',  'AMAT',
-    # ]
+    symbols = [
+        'AAPL',  'MSFT',  'GOOGL', 'AMZN',  'META',  'NVDA', 'TSLA',
+        'INTC',  'AMD',   'CRM',   'ADBE',  'ORCL',  'CSCO', 'IBM',
+        'QCOM',  'TXN',   'AVGO',  'ARM',   'PYPL',  'MU',   'UBER',
+        'ASML', 'SHOP',  'NOW',   'SNOW',  'PLTR',  'NET',  'AMAT',
+    ]
     strategy = Strategy(symbols)
+    strategy.analyse_all_stocks()
     
     # Get top stocks by different metrics
     print("\nTop Stocks by Total Score:")

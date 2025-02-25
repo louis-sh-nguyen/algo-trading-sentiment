@@ -4,6 +4,8 @@ import yfinance as yf
 import pandas as pd
 from datetime import datetime, timedelta
 from typing import Optional
+import time
+from functools import wraps
 
 def setup_logging():
     """Configure logging settings"""
@@ -16,6 +18,24 @@ def setup_logging():
         format='%(asctime)s - %(levelname)s - %(message)s'
     )
 
+def retry(func, retries=3, delay=2):
+    """Retry decorator with exponential backoff"""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        for attempt in range(retries):
+            try:
+                return func(*args, **kwargs)
+            except yf.YFRateLimitError as e:
+                logging.error(f"Attempt {attempt + 1} failed: {e}")
+                if attempt == retries - 1:
+                    raise  # Re-raise exception on last attempt
+                time.sleep(delay * (attempt + 1))  # Exponential backoff
+            except Exception as e:
+                logging.error(f"Attempt {attempt + 1} failed with non-rate-limit error: {e}")
+                raise # Re-raise immediately for non-rate-limit errors
+    return wrapper
+
+@retry
 def fetch_data(
     symbol: str, 
     start_date: Optional[str] = None, 
@@ -36,17 +56,18 @@ def fetch_data(
     """
     try:
         if start_date and end_date:
-            df = yf.download(symbol, start=start_date, end=end_date)
+            df = yf.download(symbol, start=start_date, end=end_date, progress=False)
         else:
             end_date = datetime.now()
             start_date = end_date - timedelta(days=period)
-            df = yf.download(symbol, start=start_date, end=end_date)
+            df = yf.download(symbol, start=start_date, end=end_date, progress=False)
             
         if df.empty:
             raise ValueError(f"No data found for {symbol}")
         
-        # Drop the index level 1 (stock ticker)
+        # Convert multi-index columns to single level by dropping 2nd level (e.g. ('Close', 'AAPL') → 'Close')
         df.columns = df.columns.droplevel(1)
+        
         return df
         
     except Exception as e:
