@@ -3,9 +3,11 @@ from pathlib import Path
 import yfinance as yf
 import pandas as pd
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, List
 import time
 from functools import wraps
+import requests
+import bs4 as bs
 
 def setup_logging():
     """Configure logging settings"""
@@ -88,6 +90,35 @@ def calculate_returns(prices: pd.Series) -> pd.Series:
     """Calculate percentage returns from price series"""
     return prices.pct_change()
 
+def get_sp500_tickers() -> List[str]:
+    """
+    Scrape Wikipedia to get the current list of S&P 500 companies.
+    
+    Returns:
+        List of S&P 500 ticker symbols
+    """
+    try:
+        logging.info("Fetching S&P 500 tickers from Wikipedia")
+        resp = requests.get('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies')
+        soup = bs.BeautifulSoup(resp.text, 'html.parser')
+        table = soup.find('table', {'class': 'wikitable sortable'})
+        
+        tickers = []
+        for row in table.findAll('tr')[1:]:
+            ticker = row.findAll('td')[0].text.strip()
+            ticker = ticker.replace('.', '-')  # Replace dots with hyphens for Yahoo Finance compatibility
+            tickers.append(ticker)
+        
+        logging.info(f"Successfully fetched {len(tickers)} S&P 500 tickers")
+        return tickers
+    except Exception as e:
+        logging.error(f"Error fetching S&P 500 tickers: {e}")
+        # Return a list of major tickers as a fallback
+        fallback_tickers = ["AAPL", "MSFT", "AMZN", "NVDA", "GOOGL", "META", "GOOG", "TSLA", 
+                           "BRK-B", "UNH", "JPM", "XOM", "LLY", "AVGO", "V", "PG", "MA", "HD", "COST", "MRK"]
+        logging.info(f"Using fallback list of {len(fallback_tickers)} major tickers")
+        return fallback_tickers
+
 if __name__ == '__main__':
     # Test utilities
     setup_logging()
@@ -106,3 +137,11 @@ if __name__ == '__main__':
             print(f"\nMean daily return: {returns.mean().item():.4f}")
     except Exception as e:
         print(f"Error: {e}")
+    
+    # Test S&P 500 ticker retrieval
+    try:
+        sp500 = get_sp500_tickers()
+        print(f"\nRetrieved {len(sp500)} S&P 500 tickers")
+        print(f"First 10 tickers: {', '.join(sp500[:10])}")
+    except Exception as e:
+        print(f"Error fetching S&P 500 tickers: {e}")
