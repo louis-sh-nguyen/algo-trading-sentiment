@@ -91,7 +91,7 @@ def run_app():
         # Valuation Metrics Section
         st.markdown("### Valuation Metrics (lower is better)")
         
-        # P/E Ratio
+        # P/E Ratio (negative weight)
         st.markdown("#### P/E Ratio")
         pe_cols = st.columns([1, 4])
         with pe_cols[0]:
@@ -102,7 +102,7 @@ def run_app():
             metric_weights['PE_Ratio'] = abs(st.slider("Weight", min_value=0.0, max_value=1.0, 
                                             value=0.15, step=0.05, format="%.2f")) * -1
         
-        # P/B Ratio
+        # P/B Ratio (negative weight)
         st.markdown("#### P/B Ratio")
         pb_cols = st.columns([1, 4])
         with pb_cols[0]:
@@ -116,7 +116,7 @@ def run_app():
         # Profitability Metrics Section
         st.markdown("### Profitability Metrics (higher is better)")
         
-        # ROE
+        # ROE (positive weight)
         st.markdown("#### Return on Equity")
         roe_cols = st.columns([1, 4])
         with roe_cols[0]:
@@ -127,7 +127,7 @@ def run_app():
             metric_weights['ROE'] = st.slider("Weight", min_value=0.0, max_value=1.0, 
                                         value=0.20, step=0.05, format="%.2f")
         
-        # Profit Margin
+        # Profit Margin (positive weight)
         st.markdown("#### Profit Margin")
         pm_cols = st.columns([1, 4])
         with pm_cols[0]:
@@ -141,7 +141,7 @@ def run_app():
         # Financial Health Metrics Section
         st.markdown("### Financial Health Metrics")
         
-        # Current Ratio
+        # Current Ratio (positive weight)
         st.markdown("#### Current Ratio (higher is better)")
         cr_cols = st.columns([1, 4])
         with cr_cols[0]:
@@ -152,7 +152,7 @@ def run_app():
             metric_weights['Current_Ratio'] = st.slider("Weight", min_value=0.0, max_value=1.0, 
                                                 value=0.15, step=0.05, format="%.2f", key="cr_weight")
         
-        # Debt/Equity Ratio
+        # Debt/Equity Ratio (negative weight)
         st.markdown("#### Debt/Equity Ratio (lower is better)")
         de_cols = st.columns([1, 4])
         with de_cols[0]:
