@@ -50,27 +50,30 @@ class FundamentalAnalyser:
             return {}
     
     def score_metric(self, metric_name, value):
-        """Score a single metric relative to its benchmark"""
+        """Score a single metric relative to its benchmark with consistent scaling. 
+        Scores range from 0 to 100. Scores meeting the benchmark get 75 points."""
         if value == 0 or value is None:
             return 50  # Neutral score for missing data
         
         weight = self.metric_weights[metric_name]['weight']
         benchmark = self.metric_weights[metric_name]['benchmark']
         
-        if weight > 0:  # Higher is better
+        if weight > 0:  # Higher is better (positive weights, e.g. ROE, Profit Margin)
             if value >= benchmark * 2:
                 return 100  # Double the benchmark or better gets full score
             elif value <= 0:
                 return 0   # Negative values get zero
             else:
-                return min(100, (value / benchmark) * 50 + 50)  # Scale from 50-100
-        else:  # Lower is better (negative weight)
+                # Value at benchmark gets 75 points
+                return min(100, (value / benchmark) * 50 + 25)
+        else:  # Lower is better (negative weights, e.g. P/E, Debt/Equity)
             if value <= benchmark / 2:
                 return 100  # Half the benchmark or better gets full score
             elif value >= benchmark * 2:
                 return 0   # Double the benchmark or worse gets zero
             else:
-                return max(0, 100 - ((value / benchmark) * 50))  # Scale from 50-0
+                # Value at benchmark gets 75 points
+                return max(0, 100 - ((value / benchmark) * 50 - 25))
     
     def analyse(self):
         """Calculate an overall fundamental score for the stock"""
