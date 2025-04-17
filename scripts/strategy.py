@@ -1,11 +1,16 @@
-from utils import setup_logging, fetch_data
-from technical import TechnicalAnalyser
-from fundamental import FundamentalAnalyser
-from sentiment import SentimentAnalyser
 import logging
 from typing import Dict, List
 import pandas as pd
 from datetime import datetime, timedelta
+
+from utils import setup_logging, fetch_data   # running script directly
+from technical import TechnicalAnalyser       # running script directly
+from fundamental import FundamentalAnalyser   # running script directly
+from sentiment import SentimentAnalyser       # running script directly
+from .utils import setup_logging, fetch_data  # relative import for tests
+# from .technical import TechnicalAnalyser      # relative import for tests
+# from .fundamental import FundamentalAnalyser  # relative import for tests
+# from .sentiment import SentimentAnalyser      # relative import for tests
 
 class Strategy:
     def __init__(self, symbols: list):
