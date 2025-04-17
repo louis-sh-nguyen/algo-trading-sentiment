@@ -1,8 +1,11 @@
 import pandas as pd
 import numpy as np
 from datetime import datetime
-from utils import fetch_data
-from strategy import Strategy
+
+from utils import fetch_data  # run script directly
+from strategy import Strategy   # run script directly
+# from .utils import fetch_data   # relative import for tests
+# from .strategy import Strategy   # relative import for tests
 
 class Backtester:
     def __init__(self, strategy, symbols: list, start_date: str, 

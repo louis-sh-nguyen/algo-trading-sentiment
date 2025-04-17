@@ -178,7 +178,7 @@ def run_app():
         
         # Screen button
         if st.button("Screen Fundamentals"):
-            with st.spinner("Analyzing fundamental data..."):
+            with st.spinner("Analysing fundamental data..."):
                 # Store results in a list
                 results = []
                 invalid_tickers = []
@@ -279,7 +279,7 @@ def run_app():
                     
                     # Create a chart with explicit ordering
                     chart = alt.Chart(plot_df).mark_bar().encode(
-                        x=alt.X('Symbol:N', sort=None),  # No sorting to maintain DataFrame order
+                        x=alt.X('Symbol:N', sort=None),  # No sorting, plot_df already sorted
                         y='Score:Q',
                         color=alt.value('#0068C9')
                     ).properties(
