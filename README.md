@@ -2,7 +2,7 @@
 
 This project implements a stock screening tool that evaluates equities based on a combination of fundamental analysis, technical momentum indicators, and NLP-driven sentiment analysis of financial news.
 
-<img src="./assets/UI_snapshot.png" alt="Stock Screener UI Screenshot" width="600"/> <!-- Example with width set -->
+<img src="./assets/UI_snapshot.png" alt="Stock Screener UI Screenshot" width="600"/>
 
 ## Core Features
 
