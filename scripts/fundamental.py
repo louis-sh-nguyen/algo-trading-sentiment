@@ -1,76 +1,101 @@
 import yfinance as yf
-from typing import Dict
+import pandas as pd
+import numpy as np
 import logging
 
 class FundamentalAnalyser:
-    def __init__(self, symbol: str):
+    def __init__(self, symbol):
         self.symbol = symbol
-        self.stock = yf.Ticker(symbol)
-        self.metric_weights = {
-            # Valuation (lower is better)
-            'PE_Ratio': {'weight': -0.15, 'benchmark': 20},
-            'PB_Ratio': {'weight': -0.10, 'benchmark': 3},
-            
-            # Profitability (higher is better)
-            'ROE': {'weight': 0.20, 'benchmark': 0.15},
-            'Profit_Margin': {'weight': 0.20, 'benchmark': 0.10},
-            
-            # Financial Health (higher is better)
-            'Current_Ratio': {'weight': 0.15, 'benchmark': 1.5},
-            'Debt_to_Equity': {'weight': -0.20, 'benchmark': 1.5}
-        }
-    
-    def get_metrics(self) -> Dict:
-        """Get key fundamental metrics"""
-        info = self.stock.info
-        return {
-            'PE_Ratio': info.get('trailingPE', 0),
-            'PB_Ratio': info.get('priceToBook', 0),
-            'ROE': info.get('returnOnEquity', 0),
-            'Profit_Margin': info.get('profitMargins', 0),
-            'Current_Ratio': info.get('currentRatio', 0),
-            'Debt_to_Equity': info.get('debtToEquity', 0)
-        }
-    
-    def calculate_metric_score(self, metric: str, value: float) -> float:
-        """Calculate score for individual metric"""
-        if value <= 0:
-            return 50  # Neutral score for invalid values
-            
-        config = self.metric_weights[metric]
-        benchmark = config['benchmark']
+        self.ticker = yf.Ticker(symbol)
+        self.info = self.ticker.info
         
-        # Calculate relative score
-        if config['weight'] > 0:  # Higher is better
-            score = (value / benchmark) * 100
-        else:  # Lower is better
-            score = (benchmark / value) * 100
-            
-        return max(0, min(100, score))
+        # Default weights and benchmarks
+        self.metric_weights = {
+            'PE_Ratio': {'weight': -0.15, 'benchmark': 20.0},  # Lower is better
+            'PB_Ratio': {'weight': -0.10, 'benchmark': 3.0},   # Lower is better
+            'ROE': {'weight': 0.20, 'benchmark': 0.15},        # Higher is better
+            'Profit_Margin': {'weight': 0.20, 'benchmark': 0.10}, # Higher is better
+            'Current_Ratio': {'weight': 0.15, 'benchmark': 2.0},  # Higher is better
+            'Debt_to_Equity': {'weight': -0.20, 'benchmark': 1.0}  # Lower is better
+        }
+        
+        # Store the metrics
+        self.metrics = {}
     
-    def analyse(self) -> float:
-        """Calculate fundamental score (0-100)"""
+    def get_metrics(self):
+        """Fetch fundamental metrics for the stock"""
         try:
-            metrics = self.get_metrics()
-            scores = {}
-            total_weight = 0
+            # Get P/E Ratio (try forwardPE first, then trailingPE)
+            self.metrics['PE_Ratio'] = self.info.get('forwardPE', self.info.get('trailingPE', 0))
             
-            for metric, value in metrics.items():
-                if metric in self.metric_weights and value > 0:
-                    score = self.calculate_metric_score(metric, value)
-                    weight = abs(self.metric_weights[metric]['weight'])
-                    scores[metric] = score * weight
-                    total_weight += weight
+            # Get P/B Ratio
+            self.metrics['PB_Ratio'] = self.info.get('priceToBook', 0)
             
-            if total_weight == 0:
-                return 50
-                
-            final_score = sum(scores.values()) / total_weight
-            return max(0, min(100, final_score))
+            # Get Return on Equity
+            self.metrics['ROE'] = self.info.get('returnOnEquity', 0)
             
+            # Get Profit Margin
+            self.metrics['Profit_Margin'] = self.info.get('profitMargins', 0)
+            
+            # Get Current Ratio
+            self.metrics['Current_Ratio'] = self.info.get('currentRatio', 0)
+            
+            # Get Debt to Equity
+            self.metrics['Debt_to_Equity'] = self.info.get('debtToEquity', 0) / 100 if self.info.get('debtToEquity') else 0
+            
+            return self.metrics
+        
         except Exception as e:
-            logging.error(f"Error in fundamental analysis: {e}")
-            return 50
+            print(f"Error fetching metrics for {self.symbol}: {e}")
+            return {}
+    
+    def score_metric(self, metric_name, value):
+        """Score a single metric relative to its benchmark with consistent scaling. 
+        Scores range from 0 to 100. Scores meeting the benchmark get 75 points."""
+        if value == 0 or value is None:
+            return 50  # Neutral score for missing data
+        
+        weight = self.metric_weights[metric_name]['weight']
+        benchmark = self.metric_weights[metric_name]['benchmark']
+        
+        if weight > 0:  # Higher is better (positive weights, e.g. ROE, Profit Margin)
+            if value >= benchmark * 2:
+                return 100  # Double the benchmark or better gets full score
+            elif value <= 0:
+                return 0   # Negative values get zero
+            else:
+                # Value at benchmark gets 75 points
+                return min(100, (value / benchmark) * 50 + 25)
+        else:  # Lower is better (negative weights, e.g. P/E, Debt/Equity)
+            if value <= benchmark / 2:
+                return 100  # Half the benchmark or better gets full score
+            elif value >= benchmark * 2:
+                return 0   # Double the benchmark or worse gets zero
+            else:
+                # Value at benchmark gets 75 points
+                return max(0, 100 - ((value / benchmark) * 50 - 25))
+    
+    def analyse(self):
+        """Calculate an overall fundamental score for the stock"""
+        if not self.metrics:
+            self.get_metrics()
+        
+        total_score = 0
+        total_weight = 0
+        
+        for metric, value in self.metrics.items():
+            if metric in self.metric_weights:
+                weight = abs(self.metric_weights[metric]['weight'])
+                if weight > 0:  # Skip metrics with zero weight
+                    metric_score = self.score_metric(metric, value)
+                    total_score += metric_score * weight
+                    total_weight += weight
+        
+        # Normalize the score
+        if total_weight > 0:
+            return round(total_score / total_weight, 1)
+        else:
+            return 50  # Default neutral score if no weights
 
 if __name__ == '__main__':
     symbol = 'AAPL'

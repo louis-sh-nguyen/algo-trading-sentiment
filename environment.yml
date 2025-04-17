@@ -35,7 +35,7 @@ dependencies:
   - brotli-python=1.0.9=py312h5da7b33_9
   - bzip2=1.0.8=h2bbff1b_6
   - c-ares=1.19.1=h2bbff1b_0
-  - ca-certificates=2024.12.31=haa95532_0
+  - ca-certificates=2025.2.25=haa95532_0
   - cachetools=5.5.1=py312haa95532_0
   - certifi=2025.1.31=py312haa95532_0
   - cffi=1.17.1=py312h4389bb4_0
@@ -191,7 +191,7 @@ dependencies:
   - soupsieve=2.5=pyhd8ed1ab_1
   - sqlite=3.45.3=h2bbff1b_0
   - stack_data=0.6.3=pyhd8ed1ab_1
-  - streamlit=1.42.0=py312haa95532_0
+  - streamlit=1.44.1=py312haa95532_0
   - sympy=1.13.3=py312haa95532_0
   - ta-lib=0.5.1=py312h4389bb4_0
   - tbb=2021.8.0=h59b6b97_0
